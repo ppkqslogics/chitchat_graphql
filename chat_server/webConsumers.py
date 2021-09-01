@@ -187,7 +187,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
                         )
                 os.remove(outfile)
 
-        elif message_type == 'voice':
+        elif message_type == 'voice' or message_type == 'audio':
             waiting_data = {
                 'type': 'chat_message',
                 'message': '',
