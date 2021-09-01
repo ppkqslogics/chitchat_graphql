@@ -125,6 +125,16 @@ class Query(graphene.ObjectType):
             ).reverse()
             message_query_set = list(chain(photo_message, video_message))
 
+        elif message_type == 'audio' or 'voice':
+            audio_message = Message.objects.filter(room_id=room_id, message_type='audio',
+                                                   favourite={'user_contact_id': current_user_id}).order_by(
+                'timestamp'
+            ).reverse()
+            voice_message = Message.objects.filter(room_id=room_id, message_type='voice',
+                                                   favourite={'user_contact_id': current_user_id}).order_by(
+                'timestamp').reverse()
+            message_query_set = list(chain(audio_message, voice_message))
+
         else:
             message_query_set = Message.objects.filter(room_id=room_id, message_type=message_type,
                                                    favourite={'user_contact_id': current_user_id}).order_by(
