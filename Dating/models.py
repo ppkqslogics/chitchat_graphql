@@ -1,3 +1,4 @@
+from django.contrib.postgres.fields import ArrayField
 from django.db import models
 
 # Create your models here.
@@ -11,10 +12,11 @@ class Interests(models.Model):
 
 class User_Profile(models.Model):
     name = models.CharField(max_length=512)
-    dob = models.DateField()
+    dob = models.CharField(max_length=125)
     gender = models.CharField(max_length=10)
     looking_for = models.CharField(max_length=255)
     bio = models.TextField()
+    phone = models.CharField(max_length=21, default='+95123')
     study_major = models.CharField(max_length=255, null=True)
     study_uni = models.CharField(max_length=255, null=True)
     work_position = models.CharField(max_length=255, null=True)
@@ -27,6 +29,14 @@ class User_Profile(models.Model):
     smoking = models.CharField(max_length=255, null=True)
     pets = models.CharField(max_length=255, null=True)
     fav_song = models.CharField(max_length=255, null=True)
+    looking_to_meet_with = models.CharField(max_length=125)
+    profile_pic = ArrayField(
+        models.URLField(), size=6
+    )
+    interest = ArrayField(models.CharField(max_length=125))
 
-
-
+class Profile_Match(models.Model):
+    profile_id = models.ForeignKey(User_Profile, on_delete=models.CASCADE)
+    matched_list = ArrayField(models.CharField(max_length=255))
+    match_req = ArrayField(models.CharField(max_length=255))
+    declined_list = ArrayField(models.CharField(max_length=255))
