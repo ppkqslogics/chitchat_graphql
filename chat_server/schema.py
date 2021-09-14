@@ -891,7 +891,8 @@ class UploadBackground(graphene.Mutation):
                         break
                 if must_replace:
                     if room.backgrounds[replace_index].get('bg_type') == 'user':
-                        os.remove(settings.BASE_DIR + room.backgrounds[replace_index].get('background_url'))
+                        pass
+                        #os.remove(settings.BASE_DIR + room.backgrounds[replace_index].get('background_url'))
                     room.backgrounds[replace_index] = {'user_contact_id': current_user_id, 'background_url': bg_url,
                                                        'bg_type': bg_type}
                 else:
