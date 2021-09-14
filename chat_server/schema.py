@@ -4,7 +4,6 @@ import uuid
 import os
 import json
 from itertools import chain
-
 import channels_graphql_ws
 import graphene
 import requests
@@ -863,17 +862,23 @@ class UploadBackground(graphene.Mutation):
     class Arguments:
         room_id = graphene.String(required=True)
         current_user_id = graphene.String(required=True)
+        image_data = graphene.String(required=True)
 
     room = graphene.Field(ChatRoomInfo)
 
     @classmethod
-    def mutate(cls, root, info, room_id, current_user_id, bg_type="user"):
+    def mutate(cls, root, info, room_id, current_user_id, image_data, bg_type="user"):
         room = ChatRoom.objects.get(pk=room_id)
-        if info.context.FILES and info.context.method == 'POST':
-            image = info.context.FILES['itemImage']
-            filename = str(uuid.uuid4()) + image.name
-            path = default_storage.save(filename, ContentFile(image.read()))
-            bg_url = os.path.join(settings.MEDIA_URL, path)
+        if image_data is not None:
+            outfile = str(round(datetime.now().timestamp()*10000)) + '.jpg'
+            cloud_url = 'Background/' + outfile
+            with open(outfile, "wb") as fh:
+                a = fh.write(base64.decodebytes(image_data.encode("utf-8")))
+            storage.child(cloud_url).put(outfile)
+            bg_url = storage.child(cloud_url).get_url(None)
+
+            os.remove(outfile)
+
             if room.backgrounds is None:
                 room.backgrounds = [{'user_contact_id': current_user_id, 'background_url': bg_url, 'bg_type': bg_type}]
             else:
@@ -893,6 +898,7 @@ class UploadBackground(graphene.Mutation):
                     room.backgrounds.append(
                         {'user_contact_id': current_user_id, 'background_url': bg_url, 'bg_type': bg_type})
             room.save()
+
             return UploadBackground(room=room)
 
 
@@ -918,7 +924,8 @@ class SelectBackground(graphene.Mutation):
                     break
             if must_replace:
                 if room.backgrounds[replace_index].get('bg_type') == 'user':
-                    os.remove(settings.BASE_DIR + room.backgrounds[replace_index].get('background_url'))
+                    pass
+                    #os.remove(settings.BASE_DIR + room.backgrounds[replace_index].get('background_url'))
                 room.backgrounds[replace_index] = {'user_contact_id': current_user_id, 'background_url': bg_url,
                                                    'bg_type': bg_type}
             else:
