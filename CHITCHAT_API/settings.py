@@ -46,7 +46,6 @@ INSTALLED_APPS = [
     'Reaction',
     'Favourite',
     'BackgroundImages',
-    'Dating',
     'Report'
 ]
 

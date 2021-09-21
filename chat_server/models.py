@@ -86,6 +86,7 @@ def message_id():
 class Message(models.Model):
     message_id = models.CharField(primary_key=True, max_length=255, default=message_id)
     message = (models.TextField(null=True))
+    contact_message = models.ArrayField(model_container=User, null=True)
     message_type = models.CharField(max_length=255)
     sender = models.CharField(max_length=255)
     timestamp = models.CharField(max_length=255)

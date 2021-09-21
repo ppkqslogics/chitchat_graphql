@@ -9,6 +9,7 @@ from CHITCHAT_API.settings import MONGO_CLIENT
 import pyrebase
 from chat_server.encryption import encrypt_message
 from CHITCHAT_API.firebaseConfig import firebaseConfig
+import requests
 
 firebaseConfig = pyrebase.initialize_app(firebaseConfig)
 storage = firebaseConfig.storage()
@@ -134,6 +135,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
         timestamp = datetime.now().strftime("%m/%d/%Y %H:%M:%S")
         favourite = text_data_json.get('favourite') or ""
         sender_name = text_data_json.get('sender_name') or None
+        contact_message = []
 
         if message_type == 'photo':
             waiting_data = {
@@ -338,6 +340,23 @@ class ChatConsumer(AsyncWebsocketConsumer):
                         )
                 os.remove(outfile)
 
+        elif message_type == 'contact':
+            url = "http://localhost:8000/profile_app/profile/" + message
+            rest_data = requests.get(url)
+            rest_data = rest_data.text
+            rest_data = json.loads(rest_data)
+
+            data = {
+                "chit_chat_id": rest_data['user']['chit_chat_id'],
+                "user_contact_id": rest_data['user']['id'],
+                "user_name": rest_data['user']['name'],
+                "user_photo": rest_data['user']['photo'],
+                "user_phone": rest_data['user']['phone']
+            }
+            contact_message.append(data)
+            message = message
+
+
         else:
             message = message
 
@@ -346,6 +365,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
             'sender': self.currentUser,
             'message_id': message_id,
             'message': message,
+            'contact_message': contact_message,
             'message_type': message_type,
             'online': True,
             'timestamp': timestamp,
@@ -369,6 +389,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
             'message_id': message_id,
             'sender': self.currentUser,
             'message': message,
+            'contact_message': contact_message,
             'message_type': message_type,
             'timestamp': timestamp,
             'lat': 0,
