@@ -62,6 +62,8 @@ class Query(graphene.ObjectType):
     favourite_search = graphene.List(MessageInfo, keyword=graphene.String(), room_id=graphene.String(),
                                      current_user_id=graphene.String())
 
+    message_search = graphene.List(MessageInfo, keyword=graphene.String(), room_id=graphene.String(), first=graphene.Int(), skip=graphene.Int())
+
     @staticmethod
     def resolve_allRoom(self, info):
         return ChatRoom.objects.all()
@@ -96,8 +98,7 @@ class Query(graphene.ObjectType):
             keyword = keyword.lower()
             if keyword in message_query.message:
                 ids.append(message_query.message_id)
-        if len(ids) == 1:
-            # message_favourite = Message.objects.get(pk=ids[0])
+        if len(ids) == 1:# message_favourite = Message.objects.get(pk=ids[0])
             message_favourite = Message.objects.filter(message_id=ids[0])
             for msg in message_favourite:
                 msg.message = decrypt_message(msg.message)
@@ -109,6 +110,35 @@ class Query(graphene.ObjectType):
                 message_query.message = decrypt_message(message_query.message)
             return message_favourite
 
+        else:
+            return ""
+
+    def resolve_message_search(self, info, room_id, keyword, first=None, skip=None):
+        message_query_set = Message.objects.filter(room_id=room_id).order_by('timestamp').reverse()
+
+        ids = []
+        for message_query in message_query_set:
+            message_query.message = decrypt_message(message_query.message).lower()
+            keyword = keyword.lower()
+            if keyword in message_query.message:
+                ids.append(message_query.message_id)
+
+        if len(ids) == 1:
+            search_message = Message.objects.filter(message_id=ids[0])
+            for msg in search_message:
+                msg.message = decrypt_message(msg.message)
+            return search_message
+        elif len(ids) > 1:
+            search_message = Message.objects.filter(pk__in=ids)
+            for msg in search_message:
+                msg.message = decrypt_message(msg.message)
+
+            if first:
+                search_message = search_message[:first]
+
+            if skip:
+                search_message = search_message[skip:]
+            return search_message
         else:
             return ""
 
@@ -291,7 +321,7 @@ class CreateChatRoom(graphene.Mutation):
         participant = []
 
         for all in ids:
-            url = "http://c009eb1663dc.ngrok.io/profile_app/profile/" + all
+            url = "http://localhost:8000/profile_app/profile/" + all
             rest_data = requests.get(url)
             rest_data = rest_data.text
             rest_data = json.loads(rest_data)
