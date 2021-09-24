@@ -1077,11 +1077,8 @@
         chatSocket.send(
           JSON.stringify({
             typing: true,
-            message_type: "text",
+            message_type: "voice",
             message: message,
-            replied_id:"2211627367300928",
-            replied_text:"hee",
-            replied_sender:"1",
             timestamp: getTimeStamp(),
             online: true,
           })

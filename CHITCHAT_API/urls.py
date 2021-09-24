@@ -17,11 +17,12 @@ from django.contrib import admin
 from django.urls import path, include
 from django.views.decorators.csrf import csrf_exempt
 from graphene_django.views import GraphQLView
-
+from graphene_file_upload.django import FileUploadGraphQLView
 from CHITCHAT_API.schema import schema
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('chat/', include('chat_server.urls')),
-    path('graphql/', csrf_exempt(GraphQLView.as_view(graphiql=True, schema=schema)))
+    path('graphql/', csrf_exempt(GraphQLView.as_view(graphiql=True, schema=schema))),
+    path('fileUpload/', csrf_exempt(FileUploadGraphQLView.as_view(graphiql=True))),
 ]
